@@ -12,7 +12,7 @@ import (
 Return the database connection
 */
 func GetDbConn() (*sql.DB, error) {
-	dbHostname := "localhost"
+	dbHostname := "db" // Utilisez le nom d'hôfvfvte 'db' au lieu de 'localhost'
 	_dbHostname, isSet := os.LookupEnv("DB_HOSTNAME")
 	if isSet {
 		dbHostname = _dbHostname
