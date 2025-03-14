@@ -6,6 +6,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     container_name: hackaton-api-container
+    hostname: api
     depends_on:
       - db
     environment:
@@ -23,6 +24,7 @@ services:
       context: ./bdd
       dockerfile: Dockerfile
     container_name: hackaton-db-container
+    hostname: db
     environment:
       MYSQL_DATABASE: "db"
       MYSQL_ROOT_PASSWORD: root
@@ -37,6 +39,7 @@ services:
       context: ./front
       dockerfile: Dockerfile
     container_name: hackaton-front-container
+    hostname: front
     ports:
       - "30033:80"
     environment:
