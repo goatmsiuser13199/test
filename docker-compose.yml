@@ -41,6 +41,8 @@ services:
       - "30033:80"
     environment:
       - API_HOSTNAME=api
+    depends_on:
+      - api
     restart: unless-stopped
 
 volumes:
