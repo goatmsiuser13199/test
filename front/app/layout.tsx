@@ -17,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className="min-h-screen overflow-x-hidden flex flex-wrap flex-col justify-between items-center">
+      <body className="min-h-screen overflow-x-hidden flex flex-wrap flex-col justify-between items-center bg-red-500">
         <Link href="/" >
           <Image src={logo} alt="logo" />
         </Link>
