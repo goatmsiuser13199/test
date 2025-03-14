@@ -74,19 +74,15 @@ jobs:
 
     - name: Build Docker images
       run: |
-        docker build -t your_dockerhub_username/db ./bdd
-        docker build -t your_dockerhub_username/api ./api
-        docker build -t your_dockerhub_username/front ./front
+        docker build -t hackaton-db ./bdd
+        docker build -t hackaton-api ./api
+        docker build -t hackaton-front ./front
 
-    - name: Push Docker images
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Save Docker images as tar files
       run: |
-        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-        docker push your_dockerhub_username/db
-        docker push your_dockerhub_username/api
-        docker push your_dockerhub_username/front
+        docker save hackaton-db -o hackaton-db.tar
+        docker save hackaton-api -o hackaton-api.tar
+        docker save hackaton-front -o hackaton-front.tar
 
     - name: Deploy to VPS
       env:
@@ -96,7 +92,13 @@ jobs:
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
         chmod 600 private_key
+        scp -i private_key -o StrictHostKeyChecking=no hackaton-db.tar $VPS_USERNAME@$VPS_HOST:/root/
+        scp -i private_key -o StrictHostKeyChecking=no hackaton-api.tar $VPS_USERNAME@$VPS_HOST:/root/
+        scp -i private_key -o StrictHostKeyChecking=no hackaton-front.tar $VPS_USERNAME@$VPS_HOST:/root/
         ssh -i private_key -o StrictHostKeyChecking=no $VPS_USERNAME@$VPS_HOST << 'EOF'
           cd /root
+          docker load -i hackaton-db.tar
+          docker load -i hackaton-api.tar
+          docker load -i hackaton-front.tar
           ./deploy.sh
         EOF
