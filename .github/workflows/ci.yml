@@ -1,0 +1,91 @@
+# filepath: .github/workflows/ci.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - actions
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.2
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
+
+    - name: Install dependencies for frontend
+      working-directory: ./front
+      run: npm ci
+
+    - name: Build frontend
+      working-directory: ./front
+      run: npm run build
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.21'
+
+    - name: Install dependencies for backend
+      working-directory: ./api
+      run: go mod tidy
+
+    - name: Build backend
+      working-directory: ./api
+      run: go build -o api .
+
+    - name: Run tests
+      working-directory: ./api
+      run: go test ./...
+
+    - name: Build Docker images
+      run: |
+        docker build -t your_dockerhub_username/db ./bdd
+        docker build -t your_dockerhub_username/api ./api
+        docker build -t your_dockerhub_username/front ./front
+
+    - name: Push Docker images
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+        docker push your_dockerhub_username/db
+        docker push your_dockerhub_username/api
+        docker push your_dockerhub_username/front
+
+    - name: Deploy to VPS
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+        VPS_HOST: ${{ secrets.VPS_HOST }}
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
+        chmod 600 private_key
+        ssh -i private_key -o StrictHostKeyChecking=no $VPS_USERNAME@$VPS_HOST << 'EOF'
+          cd /root
+          ./deploy.sh
+        EOF

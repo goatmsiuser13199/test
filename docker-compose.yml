@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: hackaton-api-container
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=tomyj
+      - DB_PASSWORD=tomyj123
+      - DB_NAME=db
+    ports:
+      - "2020:2020"
+    restart: unless-stopped
+
+  db:
+    build:
+      context: ./bdd
+      dockerfile: Dockerfile
+    container_name: hackaton-db-container
+    environment:
+      MYSQL_DATABASE: "db"
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: tomyj
+      MYSQL_PASSWORD: tomyj123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: hackaton-front-container
+    ports:
+      - "30033:80"
+    environment:
+      - API_HOSTNAME=api
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
