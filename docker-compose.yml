@@ -17,6 +17,8 @@ services:
       - DB_NAME=db
     ports:
       - "2020:2020"
+    networks:
+      - hackaton-network
     restart: unless-stopped
 
   db:
@@ -32,6 +34,8 @@ services:
       MYSQL_PASSWORD: tomyj123
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - hackaton-network
     restart: unless-stopped
 
   front:
@@ -46,7 +50,12 @@ services:
       - API_HOSTNAME=api
     depends_on:
       - api
+    networks:
+      - hackaton-network
     restart: unless-stopped
+
+networks:
+  hackaton-network:
 
 volumes:
   mysql_data:
