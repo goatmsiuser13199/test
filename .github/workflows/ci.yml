@@ -88,7 +88,7 @@ jobs:
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
-        VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_HOST: ${{ secrets.VPS_HOST }}  # Assurez-vous que c'est l'adresse IP de votre VPS
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
         chmod 600 private_key
